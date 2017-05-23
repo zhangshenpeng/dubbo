@@ -162,6 +162,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 	        return;
 	    }
 	    initialized = true;
+	    logger.info("############## init ##################");
     	if (interfaceName == null || interfaceName.length() == 0) {
     	    throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
     	}
@@ -356,8 +357,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
+            logger.info("isJvmRefer,url:" + url);
 		} else {
             if (url != null && url.length() > 0) { // 用户指定URL，指定的URL可能是对点对直连地址，也可能是注册中心URL
+                logger.info("user define url:" + url);
                 String[] us = Constants.SEMICOLON_SPLIT_PATTERN.split(url);
                 if (us != null && us.length > 0) {
                     for (String u : us) {
@@ -386,6 +389,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             	if (urls == null || urls.size() == 0) {
                     throw new IllegalStateException("No such any registry to reference " + interfaceName  + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                 }
+            	logger.info("register url:" + urls);
             }
 
             if (urls.size() == 1) {
@@ -396,14 +400,17 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 for (URL url : urls) {
                     invokers.add(refprotocol.refer(interfaceClass, url));
                     if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+                        logger.info("url protocol:" + url.getProtocol());
                         registryURL = url; // 用了最后一个registry url
                     }
                 }
                 if (registryURL != null) { // 有 注册中心协议的URL
                     // 对有注册中心的Cluster 只用 AvailableCluster
+                    logger.info("has registryURL:" + registryURL);
                     URL u = registryURL.addParameter(Constants.CLUSTER_KEY, AvailableCluster.NAME); 
                     invoker = cluster.join(new StaticDirectory(u, invokers));
                 }  else { // 不是 注册中心的URL
+                    logger.info("join cluster");
                     invoker = cluster.join(new StaticDirectory(invokers));
                 }
             }

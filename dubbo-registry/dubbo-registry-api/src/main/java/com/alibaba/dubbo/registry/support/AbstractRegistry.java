@@ -295,6 +295,17 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public void register(URL url) {
+        // get stack
+        Throwable ex = new Throwable();
+        StackTraceElement[] stackElements = ex.getStackTrace();
+        if(stackElements != null) {
+            for(int i = 0; i < stackElements.length; i++) {
+                logger.info("bt:" + stackElements[i].getFileName() 
+                        + ":" + stackElements[i].getClassName() 
+                        + ":" + stackElements[i].getLineNumber() 
+                       + stackElements[i].getMethodName());
+            }
+        }
         if (url == null) {
             throw new IllegalArgumentException("register url == null");
         }
@@ -315,6 +326,16 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public void subscribe(URL url, NotifyListener listener) {
+        Throwable ex = new Throwable();
+        StackTraceElement[] stackElements = ex.getStackTrace();
+        if(stackElements != null) {
+            for(int i = 0; i < stackElements.length; i++) {
+                logger.info("bt:" + stackElements[i].getFileName() 
+                        + ":" + stackElements[i].getClassName() 
+                        + ":" + stackElements[i].getLineNumber() 
+                       + stackElements[i].getMethodName());
+            }
+        }
         if (url == null) {
             throw new IllegalArgumentException("subscribe url == null");
         }

@@ -95,11 +95,15 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
      * 
      */
     protected Invoker<T> select(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
-        if (invokers == null || invokers.size() == 0)
+        logger.error("check!!!! lb:" + loadbalance + " invocation:" + invocation + 
+        		" invokders:" + invokers + " invokers size:" + invokers.size() 
+        		+ " selected:" + selected + " selected size: " + selected.size());
+    	if (invokers == null || invokers.size() == 0)
             return null;
         String methodName = invocation == null ? "" : invocation.getMethodName();
         
         boolean sticky = invokers.get(0).getUrl().getMethodParameter(methodName,Constants.CLUSTER_STICKY_KEY, Constants.DEFAULT_CLUSTER_STICKY) ;
+        logger.error("check!!!! url:" + invokers.get(0).getUrl() + " sticky:" + sticky);
         {
             //ignore overloaded method
             if ( stickyInvoker != null && !invokers.contains(stickyInvoker) ){
@@ -121,15 +125,19 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
     
     private Invoker<T> doselect(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
-        if (invokers == null || invokers.size() == 0)
+        logger.error("check!!! call doselect.invokers:" + invokers + " invokers size:" + invokers.size());
+    	if (invokers == null || invokers.size() == 0)
             return null;
         if (invokers.size() == 1)
             return invokers.get(0);
         // 如果只有两个invoker，退化成轮循
         if (invokers.size() == 2 && selected != null && selected.size() > 0) {
+        	logger.error("check!!! two invokers");
             return selected.get(0) == invokers.get(0) ? invokers.get(1) : invokers.get(0);
         }
         Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
+        logger.error("check!!! call loadbalance.url:" + getUrl() + " invocation:" + invocation
+        		+ " select:" + invoker);
         
         //如果 selected中包含（优先判断） 或者 不可用&&availablecheck=true 则重试.
         if( (selected != null && selected.contains(invoker))
@@ -210,8 +218,20 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return null;
     }
     
+    // 实际类型是:com.alibaba.dubbo.rpc.RpcInvocation
     public Result invoke(final Invocation invocation) throws RpcException {
-
+        logger.error("call invoke.invocation:" + invocation.getClass() + " " + invocation);
+        // get stack
+        Throwable ex = new Throwable();
+        StackTraceElement[] stackElements = ex.getStackTrace();
+        if(stackElements != null) {
+            for(int i = 0; i < stackElements.length; i++) {
+                logger.error("bt:" + stackElements[i].getFileName() 
+                        + ":" + stackElements[i].getClassName() 
+                        + ":" + stackElements[i].getLineNumber() 
+                       + stackElements[i].getMethodName());
+            }
+        }
         checkWhetherDestroyed();
 
         LoadBalance loadbalance;

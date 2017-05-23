@@ -23,6 +23,8 @@ import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 
 /**
  * RPC Invocation.
@@ -32,6 +34,8 @@ import com.alibaba.dubbo.common.URL;
  */
 public class RpcInvocation implements Invocation, Serializable {
 
+    private static final Logger                logger                            = LoggerFactory
+                                                                                         .getLogger(RpcInvocation.class);
     private static final long serialVersionUID = -4355285085441097045L;
 
     private String               methodName;
@@ -53,6 +57,7 @@ public class RpcInvocation implements Invocation, Serializable {
                 invocation.getInvoker());
         if (invoker != null) {
             URL url = invoker.getUrl();
+            logger.info("RpcInvocation:" + "url:" + url);
             setAttachment(Constants.PATH_KEY, url.getPath());
             if (url.hasParameter(Constants.INTERFACE_KEY)) {
                 setAttachment(Constants.INTERFACE_KEY, url.getParameter(Constants.INTERFACE_KEY));
@@ -97,6 +102,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments, Invoker<?> invoker) {
+        logger.info("RpcInvocation enter:" +  methodName + " invoker:" + (invoker != null ? invoker.getClass() : ""));
         this.methodName = methodName;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;

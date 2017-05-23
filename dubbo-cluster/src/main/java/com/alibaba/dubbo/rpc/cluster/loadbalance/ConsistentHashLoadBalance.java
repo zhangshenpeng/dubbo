@@ -26,8 +26,11 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 /**
  * ConsistentHashLoadBalance
@@ -36,15 +39,22 @@ import com.alibaba.dubbo.rpc.Invoker;
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
+    private static final Logger                logger                            = LoggerFactory
+                                                                                         .getLogger(ConsistentHashLoadBalance.class);
     private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
 
     @SuppressWarnings("unchecked")
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
+        logger.error("check!!! call hash doSelect,key:" + key);
         int identityHashCode = System.identityHashCode(invokers);
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
         if (selector == null || selector.getIdentityHashCode() != identityHashCode) {
+        	logger.error("check!!! create hash selector. invokers:" + invokers
+        			+ " invokers size:" + invokers.size() 
+        			+ " method name:" + invocation.getMethodName()
+        			+ " hash code:" + identityHashCode);
             selectors.put(key, new ConsistentHashSelector<T>(invokers, invocation.getMethodName(), identityHashCode));
             selector = (ConsistentHashSelector<T>) selectors.get(key);
         }
@@ -72,6 +82,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                 argumentIndex[i] = Integer.parseInt(index[i]);
             }
             for (Invoker<T> invoker : invokers) {
+            	logger.error("ConsistentHashSelector: invoker url:" + invoker.getUrl().toFullString());
                 for (int i = 0; i < replicaNumber / 4; i++) {
                     byte[] digest = md5(invoker.getUrl().toFullString() + i);
                     for (int h = 0; h < 4; h++) {
@@ -80,6 +91,12 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                     }
                 }
             }
+            logger.error("ConsistentHashSelector: hash code:" + this.identityHashCode 
+            		+ " url:" + url 
+            		+ " replicaNumber:" + this.replicaNumber 
+            		+ " argumentIndex:" + argumentIndex 
+            		+ " tree size:" + virtualInvokers.size()
+            		+ "worker num:" + invokers.size());
         }
 
         public int getIdentityHashCode() {
@@ -90,6 +107,8 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             String key = toKey(invocation.getArguments());
             byte[] digest = md5(key);
             Invoker<T> invoker = sekectForKey(hash(digest, 0));
+            logger.error("check!!!,hash select. arguments:" + 
+            invocation.getArguments() + " key:" + key + " digest:" + hash(digest, 0) +   " invoker:" + invoker);
             return invoker;
         }
 
