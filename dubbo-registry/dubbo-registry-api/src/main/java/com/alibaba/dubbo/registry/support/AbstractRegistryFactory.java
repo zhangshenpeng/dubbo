@@ -80,10 +80,12 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     }
 
     public Registry getRegistry(URL url) {
+    	LOGGER.info("dubbo trace.getRegistry,url:" + url);
     	url = url.setPath(RegistryService.class.getName())
     			.addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
     			.removeParameters(Constants.EXPORT_KEY, Constants.REFER_KEY);
     	String key = url.toServiceString();
+    	LOGGER.info("dubbo trace.service key:" + key);
         // 锁定注册中心获取过程，保证注册中心单一实例
         LOCK.lock();
         try {

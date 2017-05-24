@@ -21,7 +21,8 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.service.EchoService;
-
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 /**
  * AbstractProxyFactory
  * 
@@ -29,9 +30,12 @@ import com.alibaba.dubbo.rpc.service.EchoService;
  */
 public abstract class AbstractProxyFactory implements ProxyFactory {
 
+    private static final Logger                logger                            = LoggerFactory
+                                                                                         .getLogger(AbstractProxyFactory.class);
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
         Class<?>[] interfaces = null;
         String config = invoker.getUrl().getParameter("interfaces");
+        logger.debug("dubbo check. config:" + config);
         if (config != null && config.length() > 0) {
             String[] types = Constants.COMMA_SPLIT_PATTERN.split(config);
             if (types != null && types.length > 0) {

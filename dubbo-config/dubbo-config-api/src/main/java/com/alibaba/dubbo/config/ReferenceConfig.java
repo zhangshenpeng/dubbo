@@ -299,6 +299,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         //attributes通过系统context进行存储.
         StaticContext.getSystemContext().putAll(attributes);
         ref = createProxy(map);
+        logger.debug("dubbo check.create proxy ref:" + ref + " type:" + ref.getClass() + " map:" + map);
     }
     
     private static void checkAndConvertImplicitConfig(MethodConfig method, Map<String,String> map, Map<Object,Object> attributes){
@@ -394,6 +395,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
             if (urls.size() == 1) {
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));
+                logger.info("dubbo trace.invoker:" + invoker + " interface class:" + interfaceClass);
             } else {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;

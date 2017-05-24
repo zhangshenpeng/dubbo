@@ -46,6 +46,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
     
     @Override
     public void register(String service, URL url) {
+    	logger.info("dubbo trace. register.service:" + service + " url:" + url);
         super.register(service, url);
         String client = RpcContext.getContext().getRemoteAddressString();
         Map<String, URL> urls = remoteRegistered.get(client);
@@ -59,6 +60,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
 
     @Override
     public void unregister(String service, URL url) {
+    	logger.info("dubbo trace. unregister.serivice:" + service + " url:" + url);
         super.unregister(service, url);
         String client = RpcContext.getContext().getRemoteAddressString();
         Map<String, URL> urls = remoteRegistered.get(client);
@@ -70,6 +72,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
 
     @Override
     public void subscribe(String service, URL url, NotifyListener listener) {
+    	logger.info("dubbo trace. subscribe.service:" + service + " url:" + url);
         String client = RpcContext.getContext().getRemoteAddressString();
         if (logger.isInfoEnabled()){
             logger.info("[subscribe] service: "+service + ",client:"+ client);
@@ -107,6 +110,8 @@ public class SimpleRegistryService extends AbstractRegistryService {
 
     @Override
     public void unsubscribe(String service, URL url, NotifyListener listener) {
+    	logger.info("dubbo trace. unsubscribe.service:" + service + " url:" + url);
+
         super.unsubscribe(service, url, listener);
         String client = RpcContext.getContext().getRemoteAddressString();
         Map<String, NotifyListener> listeners = remoteListeners.get(client);

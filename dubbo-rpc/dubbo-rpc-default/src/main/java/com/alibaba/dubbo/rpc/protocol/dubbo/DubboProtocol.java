@@ -105,6 +105,7 @@ public class DubboProtocol extends AbstractProtocol {
                     }
                 }
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
+                logger.info("dubbo trace.response. invoker:" + invoker + " inv:" + inv);
                 return invoker.invoke(inv);
             }
             throw new RemotingException(channel, "Unsupported request: " + message == null ? null : (message.getClass().getName() + ": " + message) + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
@@ -299,6 +300,7 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+    	logger.debug("dubbo trace.refer .service type:" + serviceType + " url:" + url);
         // create rpc invoker.
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
         invokers.add(invoker);

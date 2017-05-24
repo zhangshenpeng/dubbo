@@ -76,6 +76,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     public ResponseFuture request(Object request) throws RemotingException {
+    	logger.info("dubbo trace.send request." + request);
         return channel.request(request);
     }
 
