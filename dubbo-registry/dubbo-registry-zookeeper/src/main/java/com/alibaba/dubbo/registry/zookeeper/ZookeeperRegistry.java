@@ -58,6 +58,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     
     public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
+        logger.info("dubbo trace.on ZookeeperRegistry:" + url);
         if (url.isAnyHost()) {
     		throw new IllegalStateException("registry address == null");
     	}
@@ -94,6 +95,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     protected void doRegister(URL url) {
+        logger.info("dubbo trace.register:" + url);
+        logger.info("dubbo trace.url path:" + toUrlPath(url));
+        logger.info("dubbo trace.dynamic key:" + url.getParameter(Constants.DYNAMIC_KEY, true));
         try {
         	zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
         } catch (Throwable e) {
@@ -102,6 +106,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     protected void doUnregister(URL url) {
+        logger.info("dubbo trace.unregister:" + url);
+        logger.info("dubbo trace.url path:" + toUrlPath(url));
         try {
             zkClient.delete(toUrlPath(url));
         } catch (Throwable e) {
@@ -110,9 +116,11 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     protected void doSubscribe(final URL url, final NotifyListener listener) {
+        logger.info("dubbo trace.doSubscribe." + url);
         try {
             if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
+                logger.info("dubbo trace.root path:" + root);
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                 if (listeners == null) {
                     zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, ChildListener>());
@@ -122,6 +130,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 if (zkListener == null) {
                     listeners.putIfAbsent(listener, new ChildListener() {
                         public void childChanged(String parentPath, List<String> currentChilds) {
+                            logger.info("dubbo trace.parent path:" + parentPath + " childs:" + currentChilds);
                             for (String child : currentChilds) {
 								child = URL.decode(child);
                                 if (! anyServices.contains(child)) {

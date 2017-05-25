@@ -163,6 +163,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 	    }
 	    initialized = true;
 	    logger.info("############## init ##################");
+	    logger.info("dubbo trace.interface:" + interfaceName);
     	if (interfaceName == null || interfaceName.length() == 0) {
     	    throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
     	}
@@ -183,6 +184,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 			}
             checkInterfaceAndMethods(interfaceClass, methods);
         }
+        logger.info("dubbo trace.interface class:" + interfaceClass);
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (resolve == null || resolve.length() == 0) {
@@ -268,6 +270,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
 
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
+            logger.info("dubbo trace.methods:" + methods);
             if(methods.length == 0) {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
                 map.put("methods", Constants.ANY_VALUE);
@@ -282,6 +285,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, this);
         String prifix = StringUtils.getServiceKey(map);
+        logger.info("dubbo trace.service key:" + prifix);
         if (methods != null && methods.size() > 0) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
@@ -378,6 +382,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             } else { // 通过注册中心配置拼装URL
             	List<URL> us = loadRegistries(false);
+            	logger.info("registry url:" + us);
             	if (us != null && us.size() > 0) {
                 	for (URL u : us) {
                 	    URL monitorUrl = loadMonitor(u);
@@ -390,16 +395,19 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             	if (urls == null || urls.size() == 0) {
                     throw new IllegalStateException("No such any registry to reference " + interfaceName  + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                 }
-            	logger.info("register url:" + urls);
+            	logger.info("dubbo trace:" + urls);
             }
 
+            logger.info("dubbo trace.protocol:" + refprotocol.getClass());
+            // 这里的urls数组存储的是注册中心的url
             if (urls.size() == 1) {
+                logger.info("dubbo trace.begin refer. invoker:" + invoker + " interface class:" + interfaceClass);
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));
-                logger.info("dubbo trace.invoker:" + invoker + " interface class:" + interfaceClass);
             } else {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
                 for (URL url : urls) {
+                    logger.info("dubbo trance. refer:" + url);
                     invokers.add(refprotocol.refer(interfaceClass, url));
                     if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
                         logger.info("url protocol:" + url.getProtocol());

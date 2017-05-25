@@ -236,21 +236,26 @@ public class RegistryProtocol implements Protocol {
     
     @SuppressWarnings("unchecked")
 	public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        logger.info("dubbo trace. call refer.type:" + type + " url:" + url);
+        // 设置协议，从registry变成zookeeper
         url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
         Registry registry = registryFactory.getRegistry(url);
         if (RegistryService.class.equals(type)) {
+            logger.info("dubbo trace. type:" + type);
         	return proxyFactory.getInvoker((T) registry, type, url);
         }
 
         // group="a,b" or group="*"
         Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
         String group = qs.get(Constants.GROUP_KEY);
+        logger.info("dubbo trace. group key:" + group);
         if (group != null && group.length() > 0 ) {
             if ( ( Constants.COMMA_SPLIT_PATTERN.split( group ) ).length > 1
                     || "*".equals( group ) ) {
                 return doRefer( getMergeableCluster(), registry, type, url );
             }
         }
+        logger.info("dubbo trace. doRefer:" + url);
         return doRefer(cluster, registry, type, url);
     }
     
@@ -259,10 +264,12 @@ public class RegistryProtocol implements Protocol {
     }
     
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
+        logger.info("dubbo trace. cluster:" + cluster + " registry:" + registry + " type:" + type + " url:" + url);
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, NetUtils.getLocalHost(), 0, type.getName(), directory.getUrl().getParameters());
+        logger.info("dubbo trace. subscribe url:" + subscribeUrl);
         if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,

@@ -296,6 +296,7 @@ public abstract class AbstractRegistry implements Registry {
 
     public void register(URL url) {
         // get stack
+        /*
         Throwable ex = new Throwable();
         StackTraceElement[] stackElements = ex.getStackTrace();
         if(stackElements != null) {
@@ -306,6 +307,7 @@ public abstract class AbstractRegistry implements Registry {
                        + stackElements[i].getMethodName());
             }
         }
+        */
         if (url == null) {
             throw new IllegalArgumentException("register url == null");
         }
@@ -326,6 +328,7 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public void subscribe(URL url, NotifyListener listener) {
+        /*
         Throwable ex = new Throwable();
         StackTraceElement[] stackElements = ex.getStackTrace();
         if(stackElements != null) {
@@ -336,6 +339,7 @@ public abstract class AbstractRegistry implements Registry {
                        + stackElements[i].getMethodName());
             }
         }
+        */
         if (url == null) {
             throw new IllegalArgumentException("subscribe url == null");
         }
@@ -427,6 +431,7 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
+    // url是consumer的， 而urls是provider的。
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
         if (url == null) {
             throw new IllegalArgumentException("notify url == null");
@@ -454,6 +459,7 @@ public abstract class AbstractRegistry implements Registry {
             	categoryList.add(u);
             }
         }
+        logger.info("dubbo trace.notify url:" + result);
         if (result.size() == 0) {
             return;
         }
@@ -467,6 +473,7 @@ public abstract class AbstractRegistry implements Registry {
             List<URL> categoryList = entry.getValue();
             categoryNotified.put(category, categoryList);
             saveProperties(url);
+            logger.info("dubbo trance. notify listener:" +listener.getClass() + " list:" + categoryList);
             listener.notify(categoryList);
         }
     }

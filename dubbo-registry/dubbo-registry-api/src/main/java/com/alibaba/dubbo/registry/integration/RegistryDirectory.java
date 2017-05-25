@@ -118,6 +118,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.multiGroup = group != null && ("*".equals(group) || group.contains( "," ));
         String methods = queryMap.get(Constants.METHODS_KEY);
         this.serviceMethods = methods == null ? null : Constants.COMMA_SPLIT_PATTERN.split(methods);
+        logger.info("dubbo trace.on RegistryDirectory.serviceType:" + serviceType + " service key:" + serviceKey 
+                + " query map:" + queryMap 
+                + "  dictoryUrl:" + directoryUrl 
+                + " serviceMethods:" + serviceMethods);
     }
 
     public void setProtocol(Protocol protocol) {
@@ -154,6 +158,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public synchronized void notify(List<URL> urls) {
+        logger.info("dubbo trace.notify:" + urls);
         List<URL> invokerUrls = new ArrayList<URL>();
         List<URL> routerUrls = new ArrayList<URL>();
         List<URL> configuratorUrls = new ArrayList<URL>();
@@ -204,6 +209,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @param invokerUrls 传入的参数不能为null
      */
     private void refreshInvoker(List<URL> invokerUrls){
+        logger.info("dubbo trace.refresh invoker");
         if (invokerUrls != null && invokerUrls.size() == 1 && invokerUrls.get(0) != null
                 && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // 禁止访问
@@ -343,7 +349,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @param query
      * @return invokers
      */
+    // urls:是provider的url
     private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
+        logger.info("dubbo trace.toInvokers");
         Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<String, Invoker<T>>();
         if(urls == null || urls.size() == 0){
             return newUrlInvokerMap;
