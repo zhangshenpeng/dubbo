@@ -253,6 +253,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             Map<String, List<Invoker<T>>> groupMap = new HashMap<String, List<Invoker<T>>>();
             for (Invoker<T> invoker : invokers) {
                 String group = invoker.getUrl().getParameter(Constants.GROUP_KEY, "");
+                logger.info("dubbo trace.group key:" + group);
                 List<Invoker<T>> groupInvokers = groupMap.get(group);
                 if (groupInvokers == null) {
                     groupInvokers = new ArrayList<Invoker<T>>();
@@ -265,6 +266,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             } else if (groupMap.size() > 1) {
                 List<Invoker<T>> groupInvokers = new ArrayList<Invoker<T>>();
                 for (List<Invoker<T>> groupList : groupMap.values()) {
+                	logger.info("dubbo trace.join invoker." + groupList);
                     groupInvokers.add(cluster.join(new StaticDirectory<T>(groupList)));
                 }
                 result.put(method, groupInvokers);
@@ -356,6 +358,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if(urls == null || urls.size() == 0){
             return newUrlInvokerMap;
         }
+        logger.info("dubbo trace.queryMap:" + queryMap);
         Set<String> keys = new HashSet<String>();
         String queryProtocols = this.queryMap.get(Constants.PROTOCOL_KEY);
         for (URL providerUrl : urls) {
@@ -384,6 +387,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             URL url = mergeUrl(providerUrl);
             
             String key = url.toFullString(); // URL参数是排序的
+            
             if (keys.contains(key)) { // 重复URL
                 continue;
             }
@@ -423,8 +427,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return
      */
     private URL mergeUrl(URL providerUrl){
+    	logger.info("dubbo trace.provider url:" + providerUrl);
         providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // 合并消费端参数
-        
+        logger.info("dubbo trace. mergeUrl:" + providerUrl);
         List<Configurator> localConfigurators = this.configurators; // local reference
         if (localConfigurators != null && localConfigurators.size() > 0) {
             for (Configurator configurator : localConfigurators) {
@@ -453,6 +458,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 providerUrl = providerUrl.setPath(path);
             }
         }
+        logger.info("dubbo trace.final url:" + providerUrl);
         return providerUrl;
     }
 

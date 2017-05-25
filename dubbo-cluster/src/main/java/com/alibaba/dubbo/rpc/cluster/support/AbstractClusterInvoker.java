@@ -221,7 +221,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     // 实际类型是:com.alibaba.dubbo.rpc.RpcInvocation
     public Result invoke(final Invocation invocation) throws RpcException {
         logger.error("call invoke.invocation:" + invocation.getClass() + " " + invocation);
+        
         // get stack
+        /*
         Throwable ex = new Throwable();
         StackTraceElement[] stackElements = ex.getStackTrace();
         if(stackElements != null) {
@@ -232,6 +234,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                        + stackElements[i].getMethodName());
             }
         }
+        */
         checkWhetherDestroyed();
 
         LoadBalance loadbalance;
