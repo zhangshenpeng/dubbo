@@ -69,6 +69,8 @@ public class SimpleMonitorService implements MonitorService {
     
     private static final String POISON_PROTOCOL = "poison";
     
+	public final static String PRE="&&";
+	
     // 定时任务执行器
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboMonitorTimer", true));
 
@@ -157,6 +159,40 @@ public class SimpleMonitorService implements MonitorService {
         }
     }
     
+    private void writeMetric(Date timestamp, String line) {
+        String timeStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(timestamp);
+        String day = new SimpleDateFormat("yyyyMMdd").format(timestamp);
+        
+        String filename = statisticsDirectory + "/summary"  + "/" + day;
+        try {
+	        File file = new File(filename);
+	        File dir = file.getParentFile();
+	        if (dir != null && ! dir.exists()) {
+	            dir.mkdirs();
+	        }
+	        FileWriter writer = new FileWriter(file, true);
+	        try {
+	            writer.write(timeStr + "||" + line + "\n");
+	            writer.flush();
+	        }  finally {
+	            writer.close();
+	        }
+        }  catch (Exception t) {
+	        logger.error(t.getMessage(), t);
+	    }
+        
+    }
+
+    private void writeCountMetrics(String host, String serviceInterface, String method, String metric, Date timestamp, String side, int cnt){
+    	String logType = serviceInterface + "." + method + "." + metric;
+    	String line = host + PRE + logType + PRE + cnt + PRE + 0 + PRE + "ORIGINAL" + PRE + 60 + PRE + "side="+ side;
+    	writeMetric(timestamp, line);
+    }
+    private void writeTimeMetrics(String host, String serviceInterface, String method, String metric, Date timestamp, String side, double avgTimeMs){
+    	String logType = serviceInterface + "." + method + "." + metric;
+    	String line = host + PRE + logType + PRE + avgTimeMs + PRE + 1 + PRE + "AVG" + PRE + 60 + PRE + "side=" + side;
+    	writeMetric(timestamp, line);
+    }
     private void write() throws Exception {
         URL statistics = queue.take();
         if (POISON_PROTOCOL.equals(statistics.getProtocol())) {
@@ -171,6 +207,23 @@ public class SimpleMonitorService implements MonitorService {
         } else {
             now = new Date(Long.parseLong(timestamp));
         }
+        
+        int successCnt = statistics.getParameter(SUCCESS, 0);
+        int failureCnt = statistics.getParameter(FAILURE, 0);
+        int elapsedTime = statistics.getParameter(ELAPSED, 0);
+        int totalCnt = successCnt + failureCnt;
+        double avgElapsedTime = totalCnt == 0 ? 0 : (elapsedTime/totalCnt);
+        
+        String side = "";
+        if(statistics.hasParameter(PROVIDER)) { side = CONSUMER;} 
+        else { side = PROVIDER;}
+        
+        String host = statistics.getHost();
+        writeCountMetrics(host, statistics.getServiceInterface(), statistics.getParameter(METHOD), SUCCESS, now, side, successCnt);
+        writeCountMetrics(host, statistics.getServiceInterface(), statistics.getParameter(METHOD), FAILURE, now, side, successCnt);
+        writeTimeMetrics(host, statistics.getServiceInterface(), statistics.getParameter(METHOD), ELAPSED, now, side, avgElapsedTime);
+
+        
         String day = new SimpleDateFormat("yyyyMMdd").format(now);
         SimpleDateFormat format = new SimpleDateFormat("HHmm");
         for (String key : types) {
